@@ -1,0 +1,45 @@
+﻿
+@if(ToolTipContent !="")
+{
+    <ArToolTip Target="@Id" Content="@ToolTipContent">
+        <div id=@Id style="width:fit-content">
+            <SfCheckBox  Disabled=Readonly TChecked="bool" @bind-Checked="Checked" Label="@Label" @onchange="CheckChange"></SfCheckBox>
+        </div>
+    </ArToolTip>
+}
+else
+{
+    <SfCheckBox Disabled=Readonly TChecked="bool" @bind-Checked="Checked" Label="@Label" @onchange="CheckChange"></SfCheckBox>
+}
+@code {
+    /// <summary>
+    /// Make the component read only
+    /// </summary>
+    [Parameter] public bool Readonly { get; set; }
+    /// <summary>
+    /// The tooltip text
+    ///
+    /// Default is <c>string.Empty</c>
+    /// </summary>
+    [Parameter] public string ToolTipContent { get; set; } = string.Empty;
+    /// <summary>
+    /// The Id of the component , required for the tooltip to show
+    ///
+    /// Default is <c>string.Empty</c>
+    /// </summary>
+    [Parameter] public string Id { get; set; } = string.Empty;
+    /// <summary>
+    /// The checked state of the component
+    /// </summary>
+    [Parameter] public bool Checked { get; set; }
+    /// <summary>
+    /// The label of the checkbox
+    /// </summary>
+    [Parameter] public string Label { get; set; } = String.Empty;
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+
+    private async Task CheckChange(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        await CheckedChanged.InvokeAsync(Checked);
+    }
+}

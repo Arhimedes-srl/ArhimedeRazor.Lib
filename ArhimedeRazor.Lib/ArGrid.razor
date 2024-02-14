@@ -1,0 +1,187 @@
+﻿@typeparam TItem
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Popups
+@inject SfDialogService DialogService
+<SfGrid @ref="GenericGrid" DataSource="DataSource" Toolbar=Toolbar>
+    <GridEvents TValue="TItem"  OnActionComplete="OnActionComplete" ></GridEvents>
+    <GridEditSettings Mode="EditMode.Dialog" AllowAdding=true AllowEditing=true AllowDeleting=true>
+        <Validator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </Validator>
+    </GridEditSettings>
+</SfGrid>
+
+
+@code {
+    /// <summary>
+    /// The datasource of the grid
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> DataSource {get;set;}
+    [Parameter] public EventCallback<TItem> AddEvent { get; set; }
+    [Parameter] public EventCallback<TItem> EditEvent { get; set; }
+    [Parameter] public EventCallback<TItem> DeleteEvent { get; set; }
+    private List<string> Toolbar { get; set; } = new List<string>() { "Add", "Edit", "Delete","ExcelExport" };
+    public TItem Item { get; set; } 
+    private SfGrid<TItem> GenericGrid { get; set; }
+    /// <summary>
+    /// For hiding columns : key =  hidecolumn{ColumnName}, value = {ColumnName}; For changing header text : key = headertext{ColumnName}, value = {HeaderText} ;For changing Edit&Add state to false : key = noadd{ColumnName}/noedit{ColumnName} , value = {ColumnName}
+    /// {ColumnName} is case sensitive!
+    /// </summary>
+    [Parameter] public Dictionary<string,string> Params {get;set;}
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+
+    private async void OnActionComplete(Syncfusion.Blazor.Grids.ActionEventArgs<TItem> args)
+    {
+        if (args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
+        {
+
+            if (args.Action == "Add")
+            {
+                try
+                {
+                    await AddEvent.InvokeAsync(args.Data);
+                    await GenericGrid.Refresh();
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
+            else if (args.Action == "Edit")
+            {
+                try
+                {
+                    await EditEvent.InvokeAsync(args.Data);
+                    await GenericGrid.Refresh();
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+            }
+
+        }
+        else if (args.RequestType == Syncfusion.Blazor.Grids.Action.Delete)
+        {
+            await DeleteEvent.InvokeAsync(args.Data);
+            await GenericGrid.Refresh();
+        }
+        
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(GenericGrid == null)
+        {
+            await Task.Delay(30);
+        }
+        //apply parameters
+        await SetPrimaryKey();
+        await HideColumns();
+        await ChangeEditAddState();
+        await ChangeHeaderText();
+
+        //refresh entire grid after appling parameters 
+
+        await GenericGrid.RefreshColumnsAsync();
+        await GenericGrid.RefreshHeaderAsync();
+        await GenericGrid.Refresh();
+
+    }
+    
+    private async Task HideColumns()
+    {
+
+        if(Params != null)
+        {
+            var HiddenColumns = Params.Keys.Where(x => x.StartsWith("hidecolumn"));
+            foreach (var hiddencol in HiddenColumns)
+            {
+                string columnToHide = "";
+                Params.TryGetValue(hiddencol, out columnToHide);
+                if (columnToHide != null && columnToHide != string.Empty)
+                {
+                    await GenericGrid.HideColumnAsync(columnToHide);
+                }
+            }
+        }
+
+    }
+    private async Task SetPrimaryKey()
+    {
+        var col = await GenericGrid.GetColumnByFieldAsync("ProjectID");
+        col.IsPrimaryKey = true;
+        col.IsIdentity = true;
+
+    }
+    private async Task ChangeHeaderText()
+    {
+        if (Params != null)
+        {
+            var HeaderTextsToChange = Params.Keys.Where(x => x.StartsWith("headertext"));
+            foreach (var headertexttochange in HeaderTextsToChange)
+            {
+                //get column name from key declaration
+                var columnName = headertexttochange.Substring(10);
+
+                //get value
+                var headertext = "";
+                Params.TryGetValue(headertexttochange, out headertext);
+
+                if (headertext != null && headertext != string.Empty)
+                {
+                    GridColumn col = await GenericGrid.GetColumnByFieldAsync(columnName);
+                    col.HeaderText = headertext;
+                }
+            }
+        }
+    }
+
+    private async Task ChangeEditAddState()
+    {
+        if (Params != null)
+        {
+            var noAddColumns = Params.Keys.Where(x => x.StartsWith("noadd"));
+            var noEditColumns = Params.Keys.Where(x => x.StartsWith("noedit"));
+            foreach (var noaddcol in noAddColumns)
+            {
+                var columnName = "";
+                Params.TryGetValue(noaddcol, out columnName);
+                if (columnName != null && columnName != string.Empty)
+                {
+                    GridColumn col = await GenericGrid.GetColumnByFieldAsync(columnName);
+                    col.AllowAdding = false;
+                }
+            }
+
+            foreach (var noeditcol in noEditColumns)
+            {
+                var columnName = "";
+                Params.TryGetValue(noeditcol, out columnName);
+                if (columnName != null && columnName != string.Empty)
+                {
+                    GridColumn col = await GenericGrid.GetColumnByFieldAsync(columnName);
+                    col.AllowEditing = false;
+                }
+            }
+        }
+    }
+    public void RowSelectHandler(RowSelectEventArgs<TItem> args)
+    {
+        //{args.Data} returns all the data for the current selected record.
+        // Item = args.Data;
+        // if(args.Data.GetType().GetProperty("ProjectID") !=null)
+        // {
+        //     var id = args.Data.GetType().GetProperty("ProjectID").GetValue(args.Data,null);
+        //     SelectedProjectId = (int)id;
+        // }
+    }
+
+}

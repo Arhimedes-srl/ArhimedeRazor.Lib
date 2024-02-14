@@ -1,0 +1,64 @@
+﻿@typeparam TValue
+@typeparam TItem
+<SfAutoComplete @ref="autoObj" TValue="TValue" TItem="TItem" DataSource="DataSource" AllowCustom=@AllowCustom FloatLabelType=FloatLabelType.Auto Placeholder=@Placeholder>
+    @if (FieldSettingsText != "" && FieldSettingsValue !="")
+    {
+        <AutoCompleteFieldSettings Value="@FieldSettingsValue" Text="@FieldSettingsText"></AutoCompleteFieldSettings>
+    }
+    <AutoCompleteEvents TValue="TValue" TItem="TItem" Filtering="OnFilter" ValueChange="OnValueChange"></AutoCompleteEvents>
+</SfAutoComplete>
+
+@code {
+    SfAutoComplete<TValue, TItem> autoObj { get; set; }
+    /// <summary>
+    /// The datasource of the autocomplete component
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> DataSource { get; set; }
+    /// <summary>
+    /// Allow custom values in the autocomplete
+    /// 
+    /// Default is <c>False</c>
+    /// </summary>
+    [Parameter] public bool AllowCustom { get; set; } = false;
+    /// <summary>
+    /// Placeholder of the autocomplete component
+    /// </summary>
+    [Parameter] public string Placeholder { get; set; } = "";
+    /// <summary>
+    /// The field for the value template of the autocomplete
+    /// </summary>
+    [Parameter] public string FieldSettingsValue { get; set; } = "";
+    /// <summary>
+    /// The field for the text template of the autocomplete
+    /// </summary>
+    [Parameter] public string FieldSettingsText { get; set; } = "";
+    /// <summary>
+    /// The field to filter the data in the autocomplete 
+    /// </summary>
+    [Parameter] public string FilterField { get; set; } = "";
+    [Parameter] public TValue Value { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    /// <summary>
+    /// Event called after the value of the autocomplete is changed
+    /// </summary>
+    [Parameter] public EventCallback ValueChange { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+    }
+    private async Task OnFilter(Syncfusion.Blazor.DropDowns.FilteringEventArgs args)
+    {
+        args.PreventDefaultAction = true;
+        var query = new Query().Where(new WhereFilter() { Field = FilterField, Operator = "contains", value = args.Text, IgnoreCase = true });
+
+        query = !string.IsNullOrEmpty(args.Text) ? query : new Query();
+
+        await autoObj.FilterAsync(DataSource, query);
+    }
+    private async Task OnValueChange(ChangeEventArgs<TValue,TItem> args)
+    {
+        await ValueChanged.InvokeAsync(args.Value);
+        await ValueChange.InvokeAsync();
+    }
+}

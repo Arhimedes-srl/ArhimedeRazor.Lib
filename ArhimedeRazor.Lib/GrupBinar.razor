@@ -1,0 +1,91 @@
+﻿@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+
+
+
+
+<div class="row">
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item mb-2">
+<SfCheckBox Label="Furnizor" @bind-Checked="IsSupplier" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item mb-2">
+<SfCheckBox Label="Client" @bind-Checked="IsClient" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item mb-2">
+<SfCheckBox Label="Personal" @bind-Checked="IsEmployee" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item mb-2">
+<SfCheckBox Label="Taxa-Impozit" @bind-Checked="IsTax" @onchange="onChange"></SfCheckBox>
+</div>
+</div>
+<br/>
+<div class="row">
+
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item mb-2">
+<SfCheckBox Label="Grup-Asociat" @bind-Checked="IsGroup" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item  mb-2">
+<SfCheckBox Label="Debitor-Creditor" @bind-Checked="IsDebtor" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item  mb-2">
+<SfCheckBox Label="Decont unitate" @bind-Checked="IsClearing" @onchange="onChange"></SfCheckBox>
+</div>
+<div class="col-xs-3 col-sm-3 col-lg-3 col-md-3 search-item  mb-2">
+<SfCheckBox Label="Cu consum" @bind-Checked="IsConsumption" @onchange="onChange"></SfCheckBox>
+</div>
+</div>
+@code {
+    [Parameter]
+    public string Grup_Binar { get; set; }
+    [Parameter]
+    public EventCallback<string> Grup_BinarChanged { get; set; }
+
+    public bool IsSupplier { get; set; }
+    public bool IsClient { get; set; }
+    public bool IsEmployee { get; set; }
+    public bool IsTax { get; set; }
+    public bool IsGroup { get; set; }
+    public bool IsDebtor { get; set; }
+    public bool IsClearing { get; set; }
+    public bool IsConsumption { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Grup_Binar))
+        {
+            Grup_Binar = string.Empty.PadLeft(8,' ');
+        await Grup_BinarChanged.InvokeAsync(Grup_Binar);
+        }
+        IsSupplier = (Grup_Binar.Substring(0, 1) == "1");
+        IsClient = (Grup_Binar.Substring(1, 1) == "1");
+        IsEmployee = (Grup_Binar.Substring(2, 1) == "1");
+        IsTax = (Grup_Binar.Substring(3, 1) == "1");
+
+        IsGroup = (Grup_Binar.Substring(4, 1) == "1");
+        IsDebtor = (Grup_Binar.Substring(5, 1) == "1");
+        IsClearing = (Grup_Binar.Substring(6, 1) == "1");
+        IsConsumption = (Grup_Binar.Substring(7, 1) == "1");
+
+    }
+
+    private async void onChange(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        try
+        {
+            Grup_Binar = (IsSupplier == true ? "1" : " ") + Grup_Binar.Substring(1, 7);
+            Grup_Binar = Grup_Binar.Substring(0, 1) + (IsClient == true ? "1" : " ") + Grup_Binar.Substring(2,6);
+            Grup_Binar = Grup_Binar.Substring(0, 2) + (IsEmployee == true ? "1" : " ") + Grup_Binar.Substring(3,5);
+            Grup_Binar = Grup_Binar.Substring(0, 3) + (IsTax == true ? "1" : " ") + Grup_Binar.Substring(4,4);
+            Grup_Binar = Grup_Binar.Substring(0, 4) + (IsGroup == true ? "1" : " ") + Grup_Binar.Substring(5,3);
+            Grup_Binar = Grup_Binar.Substring(0, 5) + (IsDebtor == true ? "1" : " ") + Grup_Binar.Substring(6,2);
+            Grup_Binar = Grup_Binar.Substring(0, 6) + (IsClearing == true ? "1" : " ") + Grup_Binar.Substring(7,1);
+            Grup_Binar = Grup_Binar.Substring(0, 7) + (IsConsumption == true ? "1" : " ");
+            await Grup_BinarChanged.InvokeAsync(Grup_Binar);
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

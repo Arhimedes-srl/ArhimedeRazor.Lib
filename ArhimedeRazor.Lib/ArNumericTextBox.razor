@@ -1,0 +1,30 @@
+﻿@typeparam TValue
+<ArToolTip Content="@ToolTipContent" Target="@Id">
+    <div id=@Id>
+        <SfNumericTextBox Readonly=@Readonly TValue="TValue" Decimals="@Decimals" @bind-Value="Value" Placeholder="@Placeholder" FloatLabelType="FloatLabelType.Auto">
+            <NumericTextBoxEvents TValue="TValue" ValueChange="@ValueChangeHandler"></NumericTextBoxEvents>
+        </SfNumericTextBox>
+    </div>
+</ArToolTip>
+@code {
+    [Parameter] public TValue Value { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    /// <summary>
+    /// Decimal precision of the value shown in input 
+    /// </summary>
+    [Parameter] public int? Decimals { get; set; } = 2;
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public bool Readonly { get; set; } = false;
+    [Parameter] public string ToolTipContent { get; set; } = "";
+    /// <summary>
+    /// The Id of hte component 
+    ///  
+    ///  Required for the tooltip to show
+    /// </summary>
+    [Parameter] public string Id { get; set; } = "";
+
+    private async Task ValueChangeHandler(Syncfusion.Blazor.Inputs.ChangeEventArgs<TValue> args)
+    {
+        await ValueChanged.InvokeAsync(args.Value);
+    }
+}

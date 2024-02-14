@@ -1,0 +1,60 @@
+﻿@typeparam TItem
+@typeparam TValue
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Data
+<SfDropDownList @ref="DropDown" Enabled=!Readonly Query=@Query TItem="TItem" TValue="TValue" @bind-Value="Value" DataSource="DataSource" FloatLabelType="Syncfusion.Blazor.Inputs.FloatLabelType.Auto" Placeholder="@PlaceHolder">
+    @if (ComboText!=string.Empty && ComboValue!= String.Empty)
+    {
+        <DropDownListFieldSettings Text="@ComboText" Value="@ComboValue"></DropDownListFieldSettings>
+    }
+    <DropDownListEvents TItem="TItem" TValue="TValue" ValueChange="ValueChange"></DropDownListEvents>
+    @ChildContent
+</SfDropDownList>
+<style>
+    .e-dropdownbase .e-list-item {
+        white-space: unset !important;
+        overflow-wrap: break-word !important;
+        text-overflow: unset !important;
+    }
+</style>
+@code {
+    private SfDropDownList<TValue, TItem> DropDown;
+    /// <summary>
+    /// The value of the component
+    /// </summary>
+    [Parameter] public TValue Value { get; set; }
+    /// <summary>
+    /// The query to filter the data in the dropdown
+    /// </summary>
+    [Parameter] public Query Query { get; set; } = new Query();
+    /// <summary>
+    /// Additional Syncfusion child components for different setups of the dropdown
+    /// </summary>
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    /// <summary>
+    /// The datasource of the dropdown
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> DataSource { get; set; } = new List<TItem>();
+    /// <summary>
+    /// The placeholder of the dropdown
+    /// </summary>
+    [Parameter] public string PlaceHolder { get; set; } = "";
+    /// <summary>
+    /// The text field that will be displayed in the dropdown for each value
+    /// </summary>
+    [Parameter] public string ComboText { get; set; } = string.Empty;
+    /// <summary>
+    /// The value field for each option in the dropdown
+    /// </summary>
+    [Parameter] public string ComboValue { get; set; } = string.Empty;
+    /// <summary>
+    /// The readonly state of the component
+    /// </summary>
+    [Parameter] public bool Readonly { get; set; } = false;
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+
+    private async Task ValueChange(Syncfusion.Blazor.DropDowns.ChangeEventArgs<TValue, TItem> args)
+    {
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

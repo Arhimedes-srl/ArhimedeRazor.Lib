@@ -1,0 +1,43 @@
+﻿@using Syncfusion.Blazor.Buttons
+<div class="row">
+    <div>
+        <SfRadioButton TChecked="int" Label="Furnizor" Name="@Name" Value="1" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Client" Name="@Name" Value="2" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Personal" Name="@Name" Value="3" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Taxa-Impozit" Name="@Name" Value="4" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+    </div>
+</div>
+<div class="row">
+    <div>
+        <SfRadioButton TChecked="int" Label="Grup-Asociat" Name="@Name" Value="5" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Debitor-Creditor" Name="@Name" Value="6" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Decont unitate" Name="@Name" Value="7" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+
+    </div>
+    <div>
+        <SfRadioButton TChecked="int" Label="Cu consum" Name="@Name" Value="8" @bind-Checked="@Selected" @onchange=onChange></SfRadioButton>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Selected { get; set; }
+    [Parameter] public EventCallback<int> SelectedChanged { get; set; }
+    [Parameter] public string Name { get; set; }
+
+    private async void onChange(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        await SelectedChanged.InvokeAsync(Selected);
+    }
+}

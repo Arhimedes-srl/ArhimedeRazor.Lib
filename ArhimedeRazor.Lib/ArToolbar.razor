@@ -1,0 +1,81 @@
+﻿@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Inputs
+@inject NavigationManager NavigationManager
+<SfToolbar Height="60">
+    <ToolbarItems>
+        <ToolbarItem Align="ItemAlign.Left" Type="ItemType.Button">
+            <Template>
+                <MudText Typo="Typo.h5" Color="Color.Primary">
+                    @HeaderText
+                </MudText>
+            </Template>
+        </ToolbarItem>
+        <ToolbarItem Id="excelexprot" Align="ItemAlign.Left" Type="ItemType.Button" CssClass="px-5">
+            <Template>
+                <ArToolTip Content="Excel" Target="excelbtn">
+                    <SfButton id="excelbtn" OnClick="ExcelExportMethod" IsPrimary=true CssClass="e-round" IconCss="e-icons e-exportexcel-icon"></SfButton>
+                </ArToolTip>
+
+            </Template>
+        </ToolbarItem>
+        <ToolbarItem Type="ItemType.Separator"></ToolbarItem>
+        <ToolbarItem Align="ItemAlign.Right" Type="ItemType.Input" Width="100">
+            <Template>
+                <SfTextBox Placeholder="Cautare" CssClass="mr-1" Input="@InputHandler"></SfTextBox>
+            </Template>
+        </ToolbarItem>
+        <ToolbarItem Align="ItemAlign.Right" Type="ItemType.Button">
+            <Template>
+                <ArToolTip Content="@AddTooltipText" Target="addbtn">
+                    <SfButton id="addbtn" IsPrimary=true OnClick="Add" CssClass="e-round" IconCss="e-icons e-add-icon"></SfButton>
+                </ArToolTip>
+            </Template>
+        </ToolbarItem>
+    </ToolbarItems>
+</SfToolbar>
+@code{
+    /// <summary>
+    /// Method for exporting to excel
+    /// </summary>
+    [Parameter] public EventCallback ExcelExportMethod {get;set;}
+    /// <summary>
+    /// Method for loading/reloading the data
+    /// </summary>
+    [Parameter] public EventCallback ServerReload {get;set;}
+    [Parameter] public EventCallback<string> SearchTextChanged {get;set;}
+    /// <summary>
+    /// Search text binded value
+    /// </summary>
+    [Parameter] public string SearchText { get; set; }
+    /// <summary>
+    /// The URL for the add button redirection
+    /// </summary>
+    [Parameter] public string AddUrl {get;set;}
+    /// <summary>
+    /// The header text of the page
+    /// </summary>
+    [Parameter] public string HeaderText {get;set;}
+    /// <summary>
+    /// Tooltip text for the add button
+    /// </summary>
+    [Parameter] public string AddTooltipText {get;set;}
+    private System.Timers.Timer timerObj;
+    protected override void OnInitialized()
+    {
+        timerObj = new System.Timers.Timer(1000);
+        timerObj.Elapsed += async (sender, e) => await ServerReload.InvokeAsync();
+        timerObj.AutoReset = false;
+    }
+    public void Add()
+    {
+        NavigationManager.NavigateTo(AddUrl);
+    }
+    private async void InputHandler(InputEventArgs args)
+    {
+        SearchText = args.Value;
+        await SearchTextChanged.InvokeAsync(SearchText);
+        timerObj.Stop();
+        timerObj.Start();
+    }
+}

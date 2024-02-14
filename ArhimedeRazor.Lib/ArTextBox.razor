@@ -1,0 +1,34 @@
+﻿@using Syncfusion.Blazor.Inputs
+<ArToolTip Content="@ToolTipContent" Target="@Id">
+    <SfTextBox ID=@Id Readonly="@Readonly" @bind-Value="Value" FloatLabelType="FloatLabelType.Auto" Placeholder="@Placeholder" Multiline=@Multiline ValueChange="@ValueChangeHandler"></SfTextBox>
+</ArToolTip>
+
+
+@code {
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged {get;set;}
+    /// <summary>
+    /// Make TextBox multiline (good for description fields)
+    /// </summary>
+    [Parameter] public bool Multiline { get; set; } = false;
+    /// <summary>
+    /// Readonly state of the component
+    /// 
+    /// Default is <c>False</c>
+    /// </summary>
+    [Parameter] public bool Readonly { get; set; } = false;
+    /// <summary>
+    /// The tooltip text of the component
+    /// </summary>
+    [Parameter] public string ToolTipContent { get; set; } = "";
+    /// <summary>
+    /// Make TextBox multiline (good for description fields)
+    /// </summary>
+    [Parameter] public string Id { get; set; } = "";
+    
+    private async Task ValueChangeHandler(Syncfusion.Blazor.Inputs.ChangedEventArgs args)
+    {
+        await ValueChanged.InvokeAsync(args.Value.ToString());
+    }
+}

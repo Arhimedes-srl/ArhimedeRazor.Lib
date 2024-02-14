@@ -1,0 +1,25 @@
+﻿@using Syncfusion.Blazor.Popups
+<SfTooltip ID="Tooltip"   Target="@Target" Content="@Content">
+    @childContent
+</SfTooltip>
+@code {
+    #region Parameters
+    /// <summary>
+    /// The component for wich the tooltip is shown
+    /// </summary>
+    [Parameter] public RenderFragment childContent { get; set; }
+    /// <summary>
+    /// The target component/element of the tooltip
+    /// </summary>
+    [Parameter] public string Target { get { return _target; } set { _target = "#" + value; } }
+    /// <summary>
+    /// Content of the tooltip
+    /// </summary>
+    [Parameter] public string Content { get; set; }
+    #endregion Parameters
+
+    #region Private fields
+    private string _target;
+    #endregion Private fields
+
+}

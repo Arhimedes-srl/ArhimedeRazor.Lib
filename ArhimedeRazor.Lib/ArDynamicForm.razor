@@ -1,0 +1,388 @@
+﻿
+<EditForm Model="NewProperty" OnValidSubmit="AddNewProperty" class="formdecoration">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <h4>Adauga Proprietate noua</h4>
+    <div class="row">
+        
+         <div>
+            <SfTextBox Placeholder="Denumire" @bind-Value="NewProperty.Key" />
+            <ValidationMessage For="()=>NewProperty.Key"></ValidationMessage>
+         </div>
+    @if (CollectionProperty)
+    {
+        <div>
+            <ArToolTip Target="ValoareDrop" Content="Optiune de introdus in colectie"></ArToolTip>
+            <div class="text-content">
+            <SfTextBox ID="ValoareDrop" @bind-Value="InputDropdownOption"  Placeholder="Valoare" CssClass="margin-r1"></SfTextBox>
+            <SfButton HtmlAttributes=@(new Dictionary<string, object>(){{"type","button"}}) OnClick="AddOption" Content="Adauga optiune" CssClass="e-small"></SfButton>
+            </div>
+            <SfListView @ref="sfListView" ShowHeader=true DataSource="@Datasource" Height="200px" TValue="string" >
+                <ListViewFieldSettings TValue=string  Id="Id" Text="Name"></ListViewFieldSettings>
+                <ListViewTemplates TValue="string">
+                    <HeaderTemplate>
+                        <table>
+                            <th>Colectie</th>
+                        </table>
+                    </HeaderTemplate>
+                    <Template Context="listviewContext">
+                        @{
+                            var data = listviewContext as string;
+                            // <div @onclick="(e => OnSelect(data))" style="white-space:nowrap;overflow:visible;white-space:nowrap"></div>
+                            <div class="text-content">
+                                @data
+                                <span class="e-icons e-delete-icon" @onclick="@(() => { OnDropDownOptionDelete(data); })"></span>
+                            </div>
+                        }
+                    </Template>
+                </ListViewTemplates>
+            </SfListView>
+        </div>
+    }
+    else if (DateProperty)
+    {
+        <div>
+            <SfDateTimePicker TValue="DateTime" FirstDayOfWeek="1" Format="dd-MM-yyyy HH:mm:ss"  @bind-Value="DateTimeValue" Placeholder="Data"></SfDateTimePicker>
+        </div>
+    }
+    else
+    {
+        <div>
+            <ArToolTip Target="ValoareProp" Content="Pentru Proprietatiile de tip bifa se va specifica valoarea True sau False; pentru zecimale se foloseste '.' "></ArToolTip>
+            <SfTextBox Placeholder="Valoare" @bind-Value="NewProperty.Value" ID="ValoareProp"></SfTextBox>
+         </div>
+    }
+    <div class="inline-align-sa">
+            <SfCheckBox @onchange="PropCategoryChanged" TChecked="bool" Label="Colectie" @bind-Checked="CollectionProperty" ></SfCheckBox>
+            <SfCheckBox @onchange="PropCategoryChanged" TChecked="bool" Label="Data" @bind-Checked="DateProperty" ></SfCheckBox>
+    </div>
+    </div>
+    <SfButton IsPrimary=false type="submit">Adauga proprietatea noua</SfButton>
+</EditForm>
+
+<br/>
+<br/>
+<h3>Proprietati Extra</h3>
+<hr class="breakline">
+@if(Properties != null && Properties.Count != 0)
+{
+
+        @foreach (var property in Properties)
+        {
+            var propertyType = GetPropertyType(property.Value);
+            <br/>
+            <div class="form-group">
+                <div class="text-content">
+                    <div style="width:90%">
+                        @if (propertyType == PropertyType.Integer)
+                        {
+                            <SfNumericTextBox TValue="int?" @bind-Value="TypedProperties[property.Key].IntProperty" Placeholder="@property.Key" Step="1" Format="N0" FloatLabelType=FloatLabelType.Auto >
+                                <NumericTextBoxEvents TValue="int?" ValueChanged="OnPropertiesChanged"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        }
+                        else if (propertyType == PropertyType.Decimal)
+                        {
+                            <SfNumericTextBox TValue="decimal?" @bind-Value="@TypedProperties[property.Key].DecimalProperty" Placeholder="@property.Key" Step="(decimal)0.01" Format="N2" FloatLabelType=FloatLabelType.Auto >
+                                <NumericTextBoxEvents TValue="decimal?" ValueChange="OnPropertiesChanged"></NumericTextBoxEvents>
+                            </SfNumericTextBox>
+                        }
+                        else if (propertyType == PropertyType.Boolean)
+                        {
+                            <SfCheckBox @onchange="OnPropertiesChanged" TChecked="bool?" @bind-Checked="TypedProperties[property.Key].BoolProperty" Label="@property.Key" ></SfCheckBox>
+                        }
+                        else if (propertyType == PropertyType.Collection)
+                        {
+                            <SfDropDownList TValue="string" TItem=string  DataSource="@TypedProperties[property.Key].CollectionProperty.Datasource" @bind-Value="TypedProperties[property.Key].CollectionProperty.InputOption" Placeholder="@property.Key" FloatLabelType=FloatLabelType.Auto >
+                                <DropDownListFieldSettings Text="Name" Value="Id"></DropDownListFieldSettings>
+                                <DropDownListEvents TValue=string TItem=string ValueChange="OnPropertiesChanged"></DropDownListEvents>
+                            </SfDropDownList>       
+                        }
+                        else if (propertyType == PropertyType.Date)
+                        {
+                            <SfDateTimePicker TValue="DateTime?" Format="dd.MM.yyyy HH:mm:ss"  @bind-Value="TypedProperties[property.Key].DateProperty" Placeholder="@property.Key"  >
+                                <DateTimePickerEvents TValue="DateTime?" ValueChange="OnPropertiesChanged"></DateTimePickerEvents>
+                            </SfDateTimePicker>
+                        }
+                        else
+                        {
+                            <SfTextBox @onchange="OnPropertiesChanged" Placeholder="@property.Key" @bind-Value="TypedProperties[property.Key].StringProperty" FloatLabelType=FloatLabelType.Auto />
+                        }
+                    </div>
+                
+                    
+                    <span class="e-icons e-delete-icon" @onclick="@(() => { OnPropertyDelete(property); })"></span>
+                </div>
+            </div>
+        }
+        @* <button type="submit">Salveaza</button> *@
+
+}
+else
+{
+    <p>Nicio proprietate aditionala definita.</p>
+}
+
+
+<style>
+    .delete-icon::before{
+        font-family: "e-icon";
+        content: "\e700";
+        float: right;
+        cursor: pointer;
+    }
+ 
+
+    .formdecoration{
+        box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
+        margin:10px;
+        padding:15px;
+        border-radius:10px;
+    }
+</style>
+@code {
+    [Parameter] public string PropertiesField { get; set; }
+    [Parameter] public EventCallback<string> PropertiesFieldChanged { get; set; }
+    private SfListView<string> sfListView { get; set; }
+    private List<string> Datasource { get; set; } = new();
+    [RegularExpression(@"^[a-zA-Z0-9, ]+$", ErrorMessage = "Caracterele speciale nu sunt acceptate.")]
+    private string InputDropdownOption { get; set; }
+    private Dictionary<string,int> DropDownProperties { get; set; }
+    private NewPropModel NewProperty { get; set; } = new();
+    private Dictionary<string,string> Properties { get; set; }
+    private Dictionary<string, PropertyModel> TypedProperties { get; set; } = new();
+    private Dynamic DynamicHelper { get; set; } = new();
+    private bool CollectionProperty { get; set; } = false;
+    private bool DateProperty { get; set; } = false;
+    private int LastPropertyChecked { get; set; } = 0;
+    private DateTime DateTimeValue { get; set; } = DateTime.Now.Date;
+
+    //custom radio checkbox implementation
+    private void PropCategoryChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        if(LastPropertyChecked == 0)
+        {
+            LastPropertyChecked = CollectionProperty ? 1 :(DateProperty ? 2 : 0);
+        }
+        if (CollectionProperty && LastPropertyChecked == 2)
+        {
+            LastPropertyChecked = 1;
+            DateProperty = false;
+        }else if(DateProperty  && LastPropertyChecked == 1)
+        {
+            LastPropertyChecked = 2;
+            CollectionProperty = false;
+        }
+    }
+
+    private void OnPropertiesChanged()
+    {
+        //convertim dictionarul de proprietati cu tipur in formatul original de dictionar de string-uri
+        var originalFormatProperties = ConvertBackToOriginalFormat(TypedProperties);
+
+        //convertim dictionarul de string-uri in string-ul delimitat cu ";" pentru a-l trimite inapoi in pagina parinte
+        var propertiesField = DynamicHelper.DictionaryToString(originalFormatProperties);
+        PropertiesField = propertiesField;
+        PropertiesFieldChanged.InvokeAsync(propertiesField);
+    }
+    public void AddOption()
+    {
+        if (InputDropdownOption != null && !Datasource.Contains(InputDropdownOption))
+        {
+            Datasource.Add(InputDropdownOption);
+            sfListView.DataSource = Datasource;
+        }
+    }
+    private void OnDropDownOptionDelete(string data)
+    {
+        Datasource.Remove(data);
+        sfListView.DataSource = Datasource;
+    }
+    //convertim string-ul primit in dictionar de string-uri 
+    protected override void OnParametersSet()
+    {
+        if(PropertiesField != null && PropertiesField!= string.Empty)
+        {    
+            DynamicHelper.ParsePropsToDictionary(PropertiesField);
+            Properties = DynamicHelper._properties;
+            ConvertToTypedProperties();
+        }
+        else
+        {
+            Properties = new();
+        }
+    }
+    //on delete property
+    private void OnPropertyDelete(KeyValuePair<string, string> property)
+    {
+        Properties.Remove(property.Key);
+        ConvertToTypedProperties();
+        OnPropertiesChanged();
+    }
+
+    //convertim dictionarul de proprietati cu tipur in formatul original de dictionar de string-uri
+    private Dictionary<string, string> ConvertBackToOriginalFormat(Dictionary<string, PropertyModel> typedProperties)
+    {
+        var originalFormatProperties = new Dictionary<string, string>();
+
+        foreach (var property in typedProperties)
+        {
+            if (property.Value.IntProperty.HasValue)
+            {
+                originalFormatProperties.Add(property.Key, property.Value.IntProperty.Value.ToString());
+            }
+            else if (property.Value.DecimalProperty.HasValue)
+            {
+                originalFormatProperties.Add(property.Key, property.Value.DecimalProperty.Value.ToString());
+            }
+            else if (property.Value.BoolProperty.HasValue)
+            {
+                originalFormatProperties.Add(property.Key, property.Value.BoolProperty.Value.ToString());
+            }
+            else if (property.Value.CollectionProperty !=null)
+            {
+                originalFormatProperties.Add(property.Key, DynamicHelper.DatasourceToString(property.Value.CollectionProperty.Datasource,property.Value.CollectionProperty.InputOption));
+            }
+            else if (property.Value.DateProperty.HasValue)
+            {
+                originalFormatProperties.Add(property.Key, DynamicHelper.DateTimeToString(property.Value.DateProperty.Value));
+            }
+            else
+            {
+                originalFormatProperties.Add(property.Key, property.Value.StringProperty);
+            }
+        }
+
+        return originalFormatProperties;
+    }
+    private void AddNewProperty()
+    {
+        if(!string.IsNullOrEmpty(NewProperty.Key) && !Properties.ContainsKey(NewProperty.Key))
+        {   
+            if(CollectionProperty)
+            {
+                Properties.Add(NewProperty.Key, DynamicHelper.DatasourceToString(Datasource,Datasource.FirstOrDefault()));
+            }
+            else if(DateProperty)
+            {
+                Properties.Add(NewProperty.Key, DynamicHelper.DateTimeToString(DateTimeValue));
+            }
+            else
+            {
+                Properties.Add(NewProperty.Key, NewProperty.Value);
+            }
+
+            NewProperty = new();
+            CollectionProperty = false;
+            Datasource = new();
+            InputDropdownOption = string.Empty;
+            ConvertToTypedProperties();
+            OnPropertiesChanged();
+        }
+    }
+
+    private PropertyType GetPropertyType(string value)
+    {
+        if (int.TryParse(value, out _))
+        {
+            return PropertyType.Integer;
+        }
+        else if (decimal.TryParse(value, out _))
+        {
+            return PropertyType.Decimal;
+        }
+        else if (value.ToLower() == "true" || value.ToLower() == "false")
+        {
+            return PropertyType.Boolean;
+        }
+        else if (value.Contains("//"))
+        {
+            return PropertyType.Collection;
+        }
+        else 
+        if (DateTime.TryParse(value.Replace("!",":"),out _))
+        {
+            return PropertyType.Date;
+        }
+        else
+        {
+            return PropertyType.String;
+        }
+    }
+    private void ConvertToTypedProperties()
+    {
+        TypedProperties = new();
+        foreach (var property in Properties)
+        {
+            var model = new PropertyModel();
+
+            if (int.TryParse(property.Value, out int resultInt))
+            {
+                model.IntProperty = resultInt;
+            }
+            else if (decimal.TryParse(property.Value, out decimal resultDecimal))
+            {
+                model.DecimalProperty = resultDecimal;
+            }
+            else if (bool.TryParse(property.Value, out bool resultBool))
+            {
+                model.BoolProperty = resultBool;
+            }
+            else if (DynamicHelper.CanParse(property.Value,out DateTime resultDate))
+            {
+                model.DateProperty = resultDate;
+            }
+            else if (GetPropertyType(property.Value) == PropertyType.Collection)
+            {
+                var data = DynamicHelper.StringToDatasource(property.Value);
+                model.CollectionProperty = new Collection()
+                {
+                    Datasource = data.Item1,
+                    InputOption = data.Item2,
+                };
+
+            }
+            else
+            {
+                model.StringProperty = property.Value;
+            }
+
+            TypedProperties.Add(property.Key, model);
+        }
+        StateHasChanged();
+    }
+
+
+    #region Private Models
+    private class PropertyModel
+    {
+        public int? IntProperty { get; set; }
+        public decimal? DecimalProperty { get; set; }
+        public bool? BoolProperty { get; set; }
+        public Collection? CollectionProperty { get; set; }
+        public DateTime? DateProperty { get; set; }
+        public string StringProperty { get; set; }
+    }
+    private class Collection
+    {
+        public List<string> Datasource { get; set; }
+        [RegularExpression(@"^[a-zA-Z0-9, ]+$", ErrorMessage = "Caracterele speciale nu sunt acceptate.")]
+        public string InputOption { get; set; }
+    }
+    private class NewPropModel
+    {
+        [Required(ErrorMessage ="Denumirea este obligatorie")]
+        [RegularExpression(@"^[a-zA-Z0-9. ]+$", ErrorMessage = "Caracterele speciale nu sunt acceptate.")]
+        public string Key { get; set; }
+        [RegularExpression(@"^[a-zA-Z0-9. ]+$", ErrorMessage = "Caracterele speciale nu sunt acceptate.")]
+        public string Value { get; set; }
+    }
+    private enum PropertyType
+    {
+        Integer,
+        Decimal,
+        Boolean,
+        Date,
+        Collection,
+        String
+    }
+    #endregion Private Models
+}

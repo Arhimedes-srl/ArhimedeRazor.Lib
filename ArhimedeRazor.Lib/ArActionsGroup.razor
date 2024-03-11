@@ -2,22 +2,13 @@
 @using Syncfusion.Blazor.Buttons;
 
 <SfButtonGroup CssClass="e-round-corner">
-    <SfButton IsPrimary=true OnClick="ViewEvent" CssClass="e-round-corner" IconCss="e-icons e-view-icon">Vizualizare</SfButton>
     <SfButton IsPrimary=true OnClick="EditEvent" CssClass="e-round-corner" IconCss="e-icons e-edit-icon">Editare</SfButton>
-    <SfButton IsPrimary=true OnClick="DeleteEvent" CssClass="e-round-corner" IconCss="e-icons e-delete-icon">Stergere</SfButton>
 </SfButtonGroup>
 
 @code {
-    /// <summary>
-    /// Function called when the view button is clicked
-    /// </summary>
-    [Parameter] public EventCallback ViewEvent { get; set; } 
+
     /// <summary>
     /// Function called when the edit button is clicked
     /// </summary>
     [Parameter] public EventCallback EditEvent { get; set; }
-    /// <summary>
-    /// Function called when the delete button is clicked
-    /// </summary>
-    [Parameter] public EventCallback DeleteEvent { get; set; }
 }

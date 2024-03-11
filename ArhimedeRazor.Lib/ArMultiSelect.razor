@@ -1,39 +1,55 @@
-﻿
-@typeparam TItem
-<SfMultiSelect TValue="List<TItem>" TItem="TItem" @bind-Value="SelectedItems" Mode="VisualMode.CheckBox" AllowFiltering="true" Placeholder="Selectati angajatii" DataSource="@Datasource">
-    <MultiSelectFieldSettings Text="Name"></MultiSelectFieldSettings>
-    <MultiSelectEvents TValue="List<TItem>" OnValueSelect="OnValueSelect" ValueRemoved="OnValueRemoved" TItem="TItem"></MultiSelectEvents>
-    <MultiSelectTemplates TItem="TItem">
-        <ItemTemplate>
+﻿@typeparam TItem
+@if (Id != string.Empty)
+{
+    <ArToolTip Content="@ToolTipContent" Target="@Id"></ArToolTip>
+}
+<div id=@Id>
+    <SfMultiSelect TValue="List<TItem>" TItem="TItem" @bind-Value="SelectedItems" Mode="VisualMode.CheckBox" AllowFiltering="true" Placeholder="Selectati angajatii" DataSource="@Datasource">
+        <MultiSelectFieldSettings Text="Name"></MultiSelectFieldSettings>
+        <MultiSelectEvents TValue="List<TItem>" OnValueSelect="OnValueSelect" ValueRemoved="OnValueRemoved" TItem="TItem"></MultiSelectEvents>
+        <MultiSelectTemplates TItem="TItem">
+            <ItemTemplate>
+                @{
+                    PropertyInfo col1 = context.GetType().GetProperty(FirstColumn);
+                    PropertyInfo col2 = context.GetType().GetProperty(SecondColumn);
+                }
+                <span class='name'>@(col1 != null ? col1.GetValue(context, null) : "")</span>
+                <span class='function'>@(col2 != null ? col2.GetValue(context, null) : "")</span>
+            </ItemTemplate>
+        </MultiSelectTemplates>
+    </SfMultiSelect>
+    <SfListView CssClass="listview-group" ShowHeader=true DataSource="@SelectedItems" Height="200px" TValue="TItem">
+        <ListViewFieldSettings TValue="TItem" Id="Id" Text="Name"></ListViewFieldSettings>
+        <ListViewTemplates TValue="TItem">
+            <HeaderTemplate>
+                <table>
+                    <th>Inchiriere</th>
+                </table>
+            </HeaderTemplate>
+            @* <Template>
             @{
-                PropertyInfo col1 = context.GetType().GetProperty(Column1);
-                PropertyInfo col2 = context.GetType().GetProperty(Column2);
+            var data = contex;
+            // <div @onclick="(e => OnSelect(data))" style="white-space:nowrap;overflow:visible;white-space:nowrap"></div>
+            <div class="text-content">
+            @data.Name - @data.Lift.Name   @data.StartTime.ToShortDateString()  @(data.Price + data.TransportPrice)
+            <span class="e-icons e-delete-icon" @onclick="@(() => { OnInvoiceDeleteClick(data); })"></span>
+            </div>
             }
-            <span class='name'>@(col1 != null ? col1.GetValue(context, null) : "")</span><span class='function'>@(col2 !=null ? col2.GetValue(context,null):"")</span>
-        </ItemTemplate>
-    </MultiSelectTemplates>
-</SfMultiSelect>
-<SfListView CssClass="listview-group" ShowHeader=true DataSource="@SelectedItems" Height="200px" TValue="TItem">
-    <ListViewFieldSettings TValue="TItem" Id="Id" Text="Name"></ListViewFieldSettings>
-    <ListViewTemplates TValue="TItem">
-        <HeaderTemplate>
-            <table>
-                <th>Inchiriere</th>
-            </table>
-        </HeaderTemplate>
-        @* <Template>
-        @{
-        var data = contex;
-        // <div @onclick="(e => OnSelect(data))" style="white-space:nowrap;overflow:visible;white-space:nowrap"></div>
-        <div class="text-content">
-        @data.Name - @data.Lift.Name   @data.StartTime.ToShortDateString()  @(data.Price + data.TransportPrice)
-        <span class="e-icons e-delete-icon" @onclick="@(() => { OnInvoiceDeleteClick(data); })"></span>
-        </div>
-        }
-        </Template> *@
-    </ListViewTemplates>
-</SfListView>
+            </Template> *@
+        </ListViewTemplates>
+    </SfListView>
+</div>
 @code {
+    /// <summary>
+    /// The Id of the component, required for the tooltip to show
+    /// </summary>
+    [Parameter] public string Id { get; set; }
+    /// <summary>
+    /// Text of the tooltip
+    ///
+    /// Default is <c>string.Empty</c>
+    /// </summary>
+    [Parameter] public string ToolTipContent { get; set; } = string.Empty;
     /// <summary>
     /// The datasource of the multiselect component
     /// </summary>
@@ -43,7 +59,7 @@
     /// 
     /// Default is <c>string.Empty</c>
     /// </summary>
-    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = string.Empty;
     /// <summary>
     /// The binded selected items of the multiselect component
     /// </summary>
@@ -51,11 +67,11 @@
     /// <summary>
     /// The first column of the item template 
     /// </summary>
-    [Parameter] public string Column1{ get; set; }
+    [Parameter] public string FirstColumn{ get; set; }
     /// <summary>
     /// The second column of the item template
     /// </summary>
-    [Parameter] public string Column2{ get; set; }
+    [Parameter] public string SecondColumn{ get; set; }
     [Parameter] public EventCallback<List<TItem>> SelectedItemsChanged { get; set; }
     private async Task OnValueSelect(SelectEventArgs<TItem> args)
     {
@@ -69,7 +85,7 @@
 <style>
     .function {
         right: 15px;
-        
+        position : absolute;
     }
 
     .text-content{

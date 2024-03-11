@@ -1,0 +1,38 @@
+﻿@using Syncfusion.Blazor.Data
+<SfDataManager CrossDomain="true" Url=@URL HttpClientInstance="httpClient" Adaptor="@Adaptor"></SfDataManager>
+
+@code {
+    [Parameter] public string URL { get; set; }
+    [Parameter] public Syncfusion.Blazor.Adaptors Adaptor { get; set; } = Syncfusion.Blazor.Adaptors.ODataV4Adaptor;
+    [Parameter] public Query Query { get; set; }
+    /// <summary>
+    /// The field for the value template of the autocomplete
+    ///
+    /// Default is <c>"OdataClient"</c>
+    /// </summary>
+    [Parameter] public string HttpClientType { get; set; } = "OdataClient";
+    [Inject] public IHttpClientFactory httpClientFactory { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
+    private HttpClient httpClient = new HttpClient();
+    private string BaseUrl = "";
+    protected override async Task OnParametersSetAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(HttpClientType);
+        
+        // httpClient.BaseAddress = new Uri(BaseUrl);
+        // if (!httpClient.DefaultRequestHeaders.Contains("Authorization"))
+        // {
+        //     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await AccessTokenProvider.TryGetAccessToken());
+        // }
+
+        // if (!httpClient.DefaultRequestHeaders.Contains("Bp-Tenant"))
+        // {
+        //     httpClient.DefaultRequestHeaders.Add("Bp-Tenant", tenantName);
+        // }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        //httpClient = httpClientFactory.CreateClient(HttpClientType.OdataClient);
+        //StateHasChanged();
+    }
+}

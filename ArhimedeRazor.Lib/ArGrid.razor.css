@@ -1,0 +1,22 @@
+﻿body {
+}
+.e-edit-icon::before {
+    content: '\e891';
+}
+
+.e-delete-icon::before {
+    content: '\e84e';
+}
+
+.e-view-icon::before {
+    content: '\e600';
+}
+
+.e-add-icon:before {
+    content: "\e963";
+}
+
+.e-exportexcel-icon:before {
+    content: "\e242";
+    font-size: 15px;
+}

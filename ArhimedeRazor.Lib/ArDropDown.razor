@@ -2,14 +2,31 @@
 @typeparam TValue
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Data
-<SfDropDownList @ref="DropDown" Enabled=!Readonly Query=@Query TItem="TItem" TValue="TValue" @bind-Value="Value" DataSource="DataSource" FloatLabelType="Syncfusion.Blazor.Inputs.FloatLabelType.Auto" Placeholder="@PlaceHolder">
-    @if (ComboText!=string.Empty && ComboValue!= String.Empty)
-    {
-        <DropDownListFieldSettings Text="@ComboText" Value="@ComboValue"></DropDownListFieldSettings>
-    }
-    <DropDownListEvents TItem="TItem" TValue="TValue" ValueChange="ValueChange"></DropDownListEvents>
-    @ChildContent
-</SfDropDownList>
+@if (DataSource == null)
+{
+    <SfDropDownList TItem="TItem" TValue="TValue" @bind-Value="Value"
+                    FloatLabelType="Syncfusion.Blazor.Inputs.FloatLabelType.Auto" Placeholder="@PlaceHolder">
+
+        <ArDataManager URL="@URL"></ArDataManager>
+        @if (ComboText != string.Empty && ComboValue != String.Empty)
+        {
+            <DropDownListFieldSettings Text="@ComboText" Value="@ComboValue"></DropDownListFieldSettings>
+        }
+        <DropDownListEvents TItem="TItem" TValue="TValue" ValueChange="ValueChange"></DropDownListEvents>
+    </SfDropDownList>
+}
+else
+{
+    <SfDropDownList @ref="DropDown" Enabled=!Readonly Query=@Query TItem="TItem" TValue="TValue" @bind-Value="Value" DataSource="DataSource" FloatLabelType="Syncfusion.Blazor.Inputs.FloatLabelType.Auto" Placeholder="@PlaceHolder">
+        @if (ComboText != string.Empty && ComboValue != String.Empty)
+        {
+            <DropDownListFieldSettings Text="@ComboText" Value="@ComboValue"></DropDownListFieldSettings>
+        }
+        <DropDownListEvents TItem="TItem" TValue="TValue" ValueChange="ValueChange"></DropDownListEvents>
+        @ChildContent
+    </SfDropDownList>
+}
+
 <style>
     .e-dropdownbase .e-list-item {
         white-space: unset !important;
@@ -24,6 +41,10 @@
     /// </summary>
     [Parameter] public TValue Value { get; set; }
     /// <summary>
+    /// Remote data URL
+    /// </summary>
+    [Parameter] public string URL { get; set; } = "";
+    /// <summary>
     /// The query to filter the data in the dropdown
     /// </summary>
     [Parameter] public Query Query { get; set; } = new Query();
@@ -31,6 +52,16 @@
     /// Additional Syncfusion child components for different setups of the dropdown
     /// </summary>
     [Parameter] public RenderFragment ChildContent { get; set; }
+    /// <summary>
+    /// The Id of the component, required for the tooltip to show
+    /// </summary>
+    [Parameter] public string Id { get; set; }
+    /// <summary>
+    /// Text of the tooltip
+    ///
+    /// Default is <c>string.Empty</c>
+    /// </summary>
+    [Parameter] public string ToolTipContent { get; set; } = string.Empty;
     /// <summary>
     /// The datasource of the dropdown
     /// </summary>

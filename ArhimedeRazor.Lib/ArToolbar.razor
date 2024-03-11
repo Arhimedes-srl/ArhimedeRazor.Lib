@@ -6,9 +6,9 @@
     <ToolbarItems>
         <ToolbarItem Align="ItemAlign.Left" Type="ItemType.Button">
             <Template>
-                <MudText Typo="Typo.h5" Color="Color.Primary">
+                <h6 class="primary-text">
                     @HeaderText
-                </MudText>
+                </h6>
             </Template>
         </ToolbarItem>
         <ToolbarItem Id="excelexprot" Align="ItemAlign.Left" Type="ItemType.Button" CssClass="px-5">
@@ -32,8 +32,10 @@
                 </ArToolTip>
             </Template>
         </ToolbarItem>
+        @AdditionalToolbars
     </ToolbarItems>
 </SfToolbar>
+
 @code{
     /// <summary>
     /// Method for exporting to excel
@@ -43,6 +45,7 @@
     /// Method for loading/reloading the data
     /// </summary>
     [Parameter] public EventCallback ServerReload {get;set;}
+    [Parameter] public RenderFragment AdditionalToolbars { get; set; }
     [Parameter] public EventCallback<string> SearchTextChanged {get;set;}
     /// <summary>
     /// Search text binded value
@@ -69,7 +72,10 @@
     }
     public void Add()
     {
-        NavigationManager.NavigateTo(AddUrl);
+        if (AddUrl != null)
+        {
+            NavigationManager.NavigateTo(AddUrl);
+        }
     }
     private async void InputHandler(InputEventArgs args)
     {

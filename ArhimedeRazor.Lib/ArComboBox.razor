@@ -1,0 +1,37 @@
+﻿@typeparam TValue
+@typeparam TItem
+
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.DropDowns
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<SfComboBox TValue="TValue" TItem="TItem" Placeholder="Select a Employee" >
+    <ArDataManager URL="@URL"></ArDataManager>
+    <ComboBoxFieldSettings Text="Nume" Value="Id"></ComboBoxFieldSettings>
+</SfComboBox>
+@* httpclient factory to be implemented and create client for httpclienttype  *@
+@code {
+    [Parameter] public string URL { get; set; }
+    [Parameter] public TValue Value { get; set; }
+    [Parameter] public string HttpClientType { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // var tenant = (await AuthenticationState.GetAuthenticationStateAsync()).User.Claims.FirstOrDefault(x => x.Type == "TenantId");
+        // var tenantName = NavigationManager.GetSubDomain();
+
+        // if (!httpClient.DefaultRequestHeaders.Contains("Authorization"))
+        // {
+        //     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await AccessTokenProvider.TryGetAccessToken());
+        // }
+
+        // if (!httpClient.DefaultRequestHeaders.Contains("Bp-Tenant"))
+        // {
+        //     httpClient.DefaultRequestHeaders.Add("Bp-Tenant", tenantName);
+        // }
+
+        // StateHasChanged();
+    }
+}

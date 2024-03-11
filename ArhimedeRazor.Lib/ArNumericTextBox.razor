@@ -1,11 +1,14 @@
 ﻿@typeparam TValue
-<ArToolTip Content="@ToolTipContent" Target="@Id">
-    <div id=@Id>
-        <SfNumericTextBox Readonly=@Readonly TValue="TValue" Decimals="@Decimals" @bind-Value="Value" Placeholder="@Placeholder" FloatLabelType="FloatLabelType.Auto">
-            <NumericTextBoxEvents TValue="TValue" ValueChange="@ValueChangeHandler"></NumericTextBoxEvents>
-        </SfNumericTextBox>
-    </div>
-</ArToolTip>
+@if (Id != string.Empty && ToolTipContent != string.Empty)
+{
+<ArToolTip Content="@ToolTipContent" Target="@Id"></ArToolTip>
+    
+}
+<div id=@Id>
+    <SfNumericTextBox Readonly=@Readonly TValue="TValue" Decimals="@Decimals" @bind-Value="Value" Placeholder="@Placeholder" FloatLabelType="FloatLabelType.Auto">
+        <NumericTextBoxEvents TValue="TValue" ValueChange="@ValueChangeHandler"></NumericTextBoxEvents>
+    </SfNumericTextBox>
+</div>
 @code {
     [Parameter] public TValue Value { get; set; }
     [Parameter] public string Placeholder { get; set; }

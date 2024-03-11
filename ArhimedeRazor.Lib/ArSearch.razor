@@ -1,0 +1,114 @@
+﻿@typeparam TValue
+@typeparam TItem
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.DropDowns
+@using System.Net.Http.Json
+
+<SfComboBox TItem="TItem" TValue="TValue" @oninput="InputHandler1" DataSource="Items" AllowCustom=false @bind-Value="SelectedValue">
+    <ComboBoxFieldSettings Text="@Text" Value="@Value"></ComboBoxFieldSettings>
+    <ComboBoxEvents TValue="TValue" TItem="TItem"   ValueChange="ValueChange"></ComboBoxEvents>
+</SfComboBox>
+   @*  <SfTextBox  Input="@InputHandler1" @bind-Value="SearchText" FloatLabelType="FloatLabelType.Auto" Placeholder="@Placeholder"></SfTextBox>
+
+        @if (Items != null && Items.Count != 0)
+        {
+            <SfListBox Enabled=@(Items == null ||Items.Count ==0 ? false : true) Height="250px" MaximumSelectionLength="1" @ref="ListBox" TValue="TValue" TItem="TItem" DataSource="Items">
+                <ListBoxFieldSettings Text="@Text" Value="@Value"></ListBoxFieldSettings>
+                <ListBoxEvents TValue="TValue" TItem="TItem" ValueChange="ValueChange1"></ListBoxEvents>
+                <ListBoxTemplates TItem="TItem">
+                    <NoRecordsTemplate>
+                        <div>Nicio inregistrare gasita</div>
+                    </NoRecordsTemplate>
+                </ListBoxTemplates>
+            </SfListBox>
+        }
+ *@
+
+<style>
+    .listbox-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: block;
+        position: absolute;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        padding: 12px 16px;
+        z-index: 1;
+    }
+</style>
+@code {
+    [Parameter]  public TValue SelectedValue { get; set; } 
+    [Parameter] public EventCallback<TValue> SelectedValueChanged { get; set; }
+    [Parameter] public string HttpClientType { get; set; } = "OdataClient";
+    [Parameter] public string URL { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string Value { get; set; }
+
+    private string SearchText { get; set; }
+    private HttpClient httpClient = new HttpClient();
+    private List<TItem> Items { get; set; } = new();
+    private SfListBox<TValue,TItem> ListBox { get; set; }
+    private System.Timers.Timer timerObj;
+    [Inject] IHttpClientFactory httpClientFactory { get; set; }
+
+    private async Task ValueChange1(Syncfusion.Blazor.DropDowns.ListBoxChangeEventArgs<TValue, TItem> args)
+    {
+        var val = args.Value;
+        await SelectedValueChanged.InvokeAsync(args.Value);
+    }
+
+    private async Task ValueChange(Syncfusion.Blazor.DropDowns.ChangeEventArgs<TValue, TItem> args)
+    {
+        var val = args.Value;
+        await SelectedValueChanged.InvokeAsync(args.Value);
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(HttpClientType);
+        var initialValue = await httpClient.GetFromJsonAsync<OdataResponse<TItem>>(URL + $"?$filter={Value} eq {SelectedValue}");
+        SearchText = initialValue.Value.FirstOrDefault()?.GetType().GetProperty(Text).GetValue(initialValue.Value.FirstOrDefault()).ToString();
+        Items = initialValue.Value;
+        if(Items !=null && Items.Count != 0)
+            SelectedValue = (TValue)Items.FirstOrDefault()?.GetType().GetProperty(Value).GetValue(Items.FirstOrDefault());
+        StateHasChanged();
+        timerObj = new System.Timers.Timer(1000);
+        timerObj.Elapsed += async (sender, e) =>
+        {
+            if(SearchText != string.Empty)
+            {
+                var items = await httpClient.GetFromJsonAsync<OdataResponse<TItem>>(URL+$"?$filter=contains({Text},tolower('{SearchText}'))");
+                Items = items.Value;
+                StateHasChanged();
+            }
+            else
+            {
+                Items = new();
+                StateHasChanged();
+            }
+        };
+        timerObj.AutoReset = false;
+    }
+
+    private async void InputHandler1(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        SearchText = (string)args.Value;
+        timerObj.Stop();
+        timerObj.Start();
+    }
+    private async void InputHandler(Syncfusion.Blazor.DropDowns.FilteringEventArgs args)
+    {
+        SearchText = args.Text;
+        timerObj.Stop();
+        timerObj.Start();
+    }
+    public class OdataResponse<T>
+    {
+        public List<T> Value { get; set; }
+    }
+}

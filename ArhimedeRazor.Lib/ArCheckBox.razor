@@ -1,16 +1,13 @@
 ﻿
-@if(ToolTipContent !="")
+@if(ToolTipContent !=string.Empty && Id != string.Empty)
 {
-    <ArToolTip Target="@Id" Content="@ToolTipContent">
-        <div id=@Id style="width:fit-content">
-            <SfCheckBox  Disabled=Readonly TChecked="bool" @bind-Checked="Checked" Label="@Label" @onchange="CheckChange"></SfCheckBox>
-        </div>
-    </ArToolTip>
+    <ArToolTip Target="@Id" Content="@ToolTipContent"></ArToolTip>
 }
-else
-{
+
+<div id=@Id style="width:fit-content">
     <SfCheckBox Disabled=Readonly TChecked="bool" @bind-Checked="Checked" Label="@Label" @onchange="CheckChange"></SfCheckBox>
-}
+</div>
+
 @code {
     /// <summary>
     /// Make the component read only

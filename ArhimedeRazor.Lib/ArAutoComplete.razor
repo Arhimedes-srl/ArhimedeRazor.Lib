@@ -1,25 +1,70 @@
-﻿@typeparam TValue
+﻿@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@typeparam TValue
 @typeparam TItem
-<SfAutoComplete @ref="autoObj" TValue="TValue" TItem="TItem" DataSource="DataSource" AllowCustom=@AllowCustom FloatLabelType=FloatLabelType.Auto Placeholder=@Placeholder>
-    @if (FieldSettingsText != "" && FieldSettingsValue !="")
-    {
-        <AutoCompleteFieldSettings Value="@FieldSettingsValue" Text="@FieldSettingsText"></AutoCompleteFieldSettings>
-    }
-    <AutoCompleteEvents TValue="TValue" TItem="TItem" Filtering="OnFilter" ValueChange="OnValueChange"></AutoCompleteEvents>
+@inject IHttpClientFactory httpClientFactory
+@inject NavigationManager NavigationManager 
+<SfAutoComplete  @ref="autoObj" Query=@Query  Readonly=@Readonly  Enabled="@Enabled" TValue="TValue" TItem="TItem" @bind-Value="@Value"  AllowCustom=@AllowCustom FloatLabelType=FloatLabelType.Auto Placeholder=@Placeholder>
+    <AutoCompleteFieldSettings  Value="@FieldSettingsValue" ></AutoCompleteFieldSettings>
+  <ArDataManager URL="@URL" Adaptor="Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></ArDataManager>   
+         @ChildContent
+    <AutoCompleteEvents  TValue="TValue" TItem="TItem" ValueChange="OnValueChange"  OnActionBegin="OnActionBeginhandler"  ></AutoCompleteEvents>
+    <AutoCompleteTemplates TItem="TItem">
+        <FooterTemplate>
+            <span class="footer">
+                <SfButton Content="Adauga nou" IconCss="e-icons e-icon-add" OnClick="OpenDialog"></SfButton>
+            </span>
+        </FooterTemplate>
+    </AutoCompleteTemplates>
 </SfAutoComplete>
 
+<SfDialog @bind-Visible="AddNewVisibleDialog" CloseOnEscape=true IsModal=true>
+<DialogTemplates>
+        <Header>
+            <h4>Adauga nou</h4>
+        </Header>
+        <Content>
+            <div>
+               <SfDataForm Model="AddNewObject" OnValidSubmit="AddNew">
+                   <FormValidator>
+                       <DataAnnotationsValidator></DataAnnotationsValidator>
+                   </FormValidator>
+                   <FormItems>
+                       @foreach (var item in FormFields)
+                        {
+                            <FormItem Field=@item LabelText="@item" Placeholder="@item"/>
+                        }
+                   </FormItems>
+               </SfDataForm>
+            </div>
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <SfButton Content="Anuleaza" OnClick="CloseDialog"></SfButton>
+    </DialogButtons>
+</SfDialog>
+<style>
+    .e-icon-add:before {
+        content: '\e963';
+     }
+     .footer {
+        text-indent: 1.2em;
+        display: block;
+        font-size: 15px;
+        line-height: 40px;
+        border-top: 1px solid #e0e0e0;
+    }
+</style>
+
+
 @code {
-    SfAutoComplete<TValue, TItem> autoObj { get; set; }
-    /// <summary>
-    /// The datasource of the autocomplete component
-    /// </summary>
-    [Parameter] public IEnumerable<TItem> DataSource { get; set; }
-    /// <summary>
-    /// Allow custom values in the autocomplete
-    /// 
-    /// Default is <c>False</c>
-    /// </summary>
+    #region Parameters
+    [Parameter] public string URL { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public Query Query { get; set; }
     [Parameter] public bool AllowCustom { get; set; } = false;
+    [Parameter] public bool Readonly { get; set; } = false;
+    [Parameter] public bool Enabled { get; set; } = true;
     /// <summary>
     /// Placeholder of the autocomplete component
     /// </summary>
@@ -28,37 +73,87 @@
     /// The field for the value template of the autocomplete
     /// </summary>
     [Parameter] public string FieldSettingsValue { get; set; } = "";
-    /// <summary>
-    /// The field for the text template of the autocomplete
-    /// </summary>
-    [Parameter] public string FieldSettingsText { get; set; } = "";
-    /// <summary>
-    /// The field to filter the data in the autocomplete 
-    /// </summary>
-    [Parameter] public string FilterField { get; set; } = "";
+    [Parameter] public string AdditionalFilterColumn { get; set; } = string.Empty;
+    [Parameter] public int GrupBinarIndex { get; set; } = -1;
     [Parameter] public TValue Value { get; set; }
     [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
-    /// <summary>
-    /// Event called after the value of the autocomplete is changed
-    /// </summary>
     [Parameter] public EventCallback ValueChange { get; set; }
-
-    protected override void OnParametersSet()
+    [Parameter] public EventCallback AddNewMethod { get; set; }
+    [Parameter] public bool AddNewVisibleDialog { get; set; } = false;
+    /// <summary>
+    /// The field for the value template of the autocomplete
+    ///
+    /// Default is <c>"OdataClient"</c>
+    /// </summary>
+    [Parameter] public string HttpClientType { get; set; } = "OdataClient";
+    [Parameter] public List<string> FormFields { get; set; }
+    [Parameter] public TItem? AddNewObject { get; set; }
+    #endregion Parameters
+    private HttpClient httpClient = new HttpClient();
+    private SfAutoComplete<TValue, TItem> autoObj;
+    public async Task ReloadData()
     {
-        StateHasChanged();
+        await autoObj.RefreshDataAsync();
+    }
+    private async Task OpenDialog()
+    {
+        AddNewVisibleDialog = true;
+    }
+    private async Task AddNew()
+    {
+        await httpClient.PostAsJsonAsync(URL, AddNewObject);
+        AddNewVisibleDialog = false;
+    }
+    private void CloseDialog()
+    {
+        AddNewVisibleDialog = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = httpClientFactory.CreateClient(HttpClientType);
+    }
+    private bool FirstTime { get; set; } = true;
+    private async Task OnActionBeginhandler(ActionBeginEventArgs args)
+    {
+        
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        Query = new Query().Take(10);
+
     }
     private async Task OnFilter(Syncfusion.Blazor.DropDowns.FilteringEventArgs args)
     {
         args.PreventDefaultAction = true;
-        var query = new Query().Where(new WhereFilter() { Field = FilterField, Operator = "contains", value = args.Text, IgnoreCase = true });
+
+        var pre = new WhereFilter();
+
+        var predicate = new List<WhereFilter>();
+
+        //predicate.Add(new WhereFilter() { Condition = "or", Field = "Id", value = args.Text, Operator = "contains", IgnoreAccent = true, IgnoreCase = true });
+        //if additional filter column is set then filter by that column to be equal to the value's property same column
+        if (!string.IsNullOrEmpty(AdditionalFilterColumn))
+        {
+            predicate.Add(new WhereFilter() { Condition = "and", Field = AdditionalFilterColumn, value = Value, Operator = "equals", IgnoreAccent = true, IgnoreCase = true });
+        }
+        //predicate.Add(new WhereFilter() {  Condition = "and", Field = FieldSettingsText, value = args.Text, Operator = "contains", IgnoreAccent = true, IgnoreCase = true });
+        if (GrupBinarIndex != -1) predicate.Add(new WhereFilter() { Condition = "and", Field = $"substring(GrupBinar,{GrupBinarIndex},1)", value = "1", Operator = "contains", IgnoreAccent = true, IgnoreCase = true });
+
+        pre = WhereFilter.And(predicate);
+
+        var query = new Query().Where(pre);
 
         query = !string.IsNullOrEmpty(args.Text) ? query : new Query();
 
-        await autoObj.FilterAsync(DataSource, query);
+        await autoObj.FilterAsync(this.autoObj.DataSource, query);
     }
-    private async Task OnValueChange(ChangeEventArgs<TValue,TItem> args)
+    private async Task OnValueChange(ChangeEventArgs<TValue, TItem> args)
     {
         await ValueChanged.InvokeAsync(args.Value);
+        //Query = new Query().Where(new WhereFilter() { Field = FieldSettingsValue, Operator = "equals", value = args.Value, IgnoreCase = true }).RequiresCount();
         await ValueChange.InvokeAsync();
     }
+
 }
